@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>⚫ ИТД · NOWKIE · ЧИКЕНБУРБЕРГ</title>
+    <style>
+        /* ========== 1. ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ — ЧЁРНО-БЕЛАЯ ГАММА ========== */
+        :root {
+            --white: #ffffff;
+            --black: #000000;
+            --gray-200: #cccccc;
+            --gray-300: #999999;
+            --gray-400: #666666;
+            --gray-500: #3a3a3a;
+            --gray-600: #1e1e1e;
+            --gray-700: #121212;
+            --gray-800: #0a0a0a;
+            --dark-panel: #1a1a1a;
+            --card-bg: #242424;
+            --border-glow: #555555;
+            --text-light: #eeeeee;
+            --text-dim: #aaaaaa;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #0a0a0a;
+            background: radial-gradient(circle at 20% 30%, #1a1a1a, #000000);
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            user-select: none;
+            padding-bottom: 80px;
+            position: relative;
+        }
+
+        /* частицы серые */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: #777;
+            animation: floatUp linear infinite;
+            opacity: 0;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 0.5; }
+            90% { opacity: 0.1; }
+            100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+        }
+
+        /* экран логина */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            background: #0a0a0a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: opacity 0.6s, visibility 0.6s;
+        }
+        .login-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .login-logo {
+            font-size: 2.8em;
+            font-weight: 900;
+            background: linear-gradient(135deg, #dddddd, #888888);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px #aaaaaa50);
+            margin-bottom: 6px;
+            letter-spacing: 2px;
+        }
+        .login-sub {
+            color: #aaaaaa;
+            letter-spacing: 2px;
+            font-size: 0.8em;
+            margin-bottom: 25px;
+        }
+        .login-input {
+            background: #1e1e1e;
+            border: 2px solid #666;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 30px;
+            font-size: 1.1em;
+            text-align: center;
+            font-weight: 700;
+            width: 240px;
+            margin-bottom: 15px;
+            outline: none;
+        }
+        .login-btn {
+            padding: 14px 40px;
+            border-radius: 30px;
+            border: none;
+            background: #444;
+            color: #fff;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1.1em;
+            box-shadow: 0 0 10px #666;
+            transition: 0.2s;
+        }
+        .login-btn:active { transform: scale(0.93); background: #222; }
+
+        /* основной контейнер */
+        .game-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 530px;
+            padding: 10px 12px 20px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 10px 0;
+        }
+        .header .title {
+            font-size: 2em;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ccc, #aaa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+        }
+        .player-name {
+            font-size: 0.8em;
+            color: #aaa;
+            text-transform: uppercase;
+        }
+
+        /* блок денег */
+        .money-display {
+            background: var(--dark-panel);
+            border: 2px solid #555;
+            border-radius: 20px;
+            padding: 16px 20px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(255,255,255,0.05), inset 0 0 10px #00000030;
+            position: relative;
+        }
+        .money-amount {
+            font-size: 2.8em;
+            font-weight: 900;
+            color: #f0f0f0;
+            text-shadow: 0 0 8px #888;
+            transition: transform 0.1s;
+        }
+        .money-amount.pop { animation: moneyPop 0.3s ease-out; }
+        @keyframes moneyPop { 0% { transform: scale(1.3); } 100% { transform: scale(1); } }
+        .per-second { font-size: 0.8em; color: #88cc88; text-shadow: 0 0 5px #88cc8840; }
+        
+        /* ранги + прогресс */
+        .rank-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            margin-top: 6px;
+        }
+        .rank-badge-main {
+            background: #2a2a2a;
+            border: 1px solid #aaa;
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 0.8em;
+            font-weight: 700;
+            color: #ddd;
+        }
+        .rank-progress {
+            font-size: 0.7em;
+            color: #bbbbbb;
+            background: #1f1f1f;
+            border-radius: 20px;
+            padding: 5px 12px;
+            width: 100%;
+            text-align: center;
+            line-height: 1.3;
+        }
+        .progress-bar-bg {
+            background: #333;
+            border-radius: 12px;
+            height: 6px;
+            margin-top: 6px;
+            width: 100%;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: #aaa;
+            height: 100%;
+            width: 0%;
+            transition: width 0.2s;
+        }
+
+        /* клик-зона */
+        .click-area { display: flex; justify-content: center; padding: 20px 0; }
+        .main-click-btn {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: 3px solid #aaaaaa;
+            background: radial-gradient(circle at 40% 35%, #3a3a3a, #111);
+            cursor: pointer;
+            font-size: 3.8em;
+            transition: transform 0.1s ease-out, box-shadow 0.15s;
+            box-shadow: 0 0 20px #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .main-click-btn:active { transform: scale(0.88) !important; box-shadow: 0 0 30px #aaa !important; }
+        .click-hint { text-align: center; color: #aaa; font-size: 0.75em; margin-top: 6px; }
+        .click-value-pop {
+            position: fixed;
+            pointer-events: none;
+            font-weight: 900;
+            font-size: 1.5em;
+            color: #ffdd99;
+            text-shadow: 0 0 8px #ffffff80;
+            animation: popUp 1s ease-out forwards;
+            z-index: 100;
+        }
+        @keyframes popUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-120px) scale(1.5); }
+        }
+
+        /* карточки мемов и бустов */
+        .shop-section-title {
+            color: #bbb;
+            letter-spacing: 2px;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 6px;
+        }
+        .upgrade-card {
+            background: #1e1e1e;
+            border: 1px solid #444;
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+        }
+        .upgrade-card:active { transform: scale(0.98); background: #2a2a2a; }
+        .upgrade-card.owned { border-color: #88cc88; background: #1e2a1e; box-shadow: 0 0 8px #88cc8860; }
+        .upgrade-card.locked { opacity: 0.5; cursor: not-allowed; filter: grayscale(40%); }
+        .upgrade-icon { font-size: 2.2em; min-width: 50px; text-align: center; filter: grayscale(0.2); }
+        .upgrade-info { flex: 1; }
+        .upgrade-name { font-weight: 700; color: #eee; font-size: 0.95em; }
+        .upgrade-desc { font-size: 0.7em; color: #aaa; }
+        .upgrade-stats { font-size: 0.7em; color: #88cc88; }
+        .upgrade-cost { font-weight: 700; color: #ffcc88; font-size: 0.9em; white-space: nowrap; }
+        .upgrade-count {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            background: #555;
+            color: #fff;
+            font-size: 0.7em;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        /* нижнее меню */
+        .bottom-menu {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #0f0f0fe6;
+            backdrop-filter: blur(12px);
+            border-top: 1px solid #444;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 16px;
+            z-index: 100;
+            border-radius: 28px 28px 0 0;
+        }
+        .bottom-menu-btn {
+            background: transparent;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 16px;
+            border-radius: 32px;
+            cursor: pointer;
+            color: #aaa;
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+        .bottom-menu-btn .icon { font-size: 1.8em; filter: grayscale(0.6); }
+        .bottom-menu-btn.active {
+            background: #3a3a3a;
+            color: #fff;
+            box-shadow: 0 0 8px #aaa;
+        }
+        .bottom-menu-btn:active { transform: scale(0.94); }
+        .menu-divider { width: 1px; height: 30px; background: #555; margin: 0 4px; }
+
+        /* таб-панели */
+        .tab-panel { display: none; animation: fadeSlideIn 0.3s ease; }
+        .tab-panel.active { display: block; }
+        @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* казино заблокировано */
+        .casino-locked-overlay {
+            background: #151515;
+            border-radius: 24px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #555;
+            margin-top: 12px;
+        }
+        .casino-locked-overlay .lock-icon { font-size: 3.5rem; margin-bottom: 10px; opacity: 0.7; }
+        .casino-locked-overlay p { color: #aaa; font-size: 0.9rem; }
+        .sub-tabs {
+            display: flex;
+            gap: 3px;
+            background: #1f1f1f;
+            border-radius: 10px;
+            padding: 3px;
+            margin-bottom: 10px;
+        }
+        .sub-tab-btn {
+            flex: 1;
+            padding: 8px 4px;
+            background: #2c2c2c;
+            color: #777;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.7em;
+            border: none;
+            cursor: default;
+            filter: grayscale(0.8);
+        }
+        .temp-boost-indicator { background: #555; padding: 3px 10px; border-radius: 12px; font-size: 0.7em; margin-left: 6px; display: inline-block; }
+        .debug-toggle { position: fixed; bottom: 90px; left: 10px; background: #1f1f1f; border: 1px solid #666; color: #bbb; padding: 4px 10px; border-radius: 20px; cursor: pointer; font-size: 0.65em; z-index: 50; }
+        .debug-panel { position: fixed; bottom: 130px; left: 10px; background: #1a1a1ae6; border-radius: 14px; padding: 12px; display: none; flex-direction: column; gap: 6px; backdrop-filter: blur(8px); z-index: 50; border: 1px solid #555; }
+        .debug-panel.open { display: flex; }
+        .debug-btn { background: #2c2c2c; color: #ddd; padding: 5px 10px; border-radius: 12px; cursor: pointer; border: none; }
+    </style>
+</head>
+<body>
+
+<div class="login-overlay" id="loginOverlay">
+    <div class="login-logo">⚫ ITD · NOWKIE</div>
+    <div class="login-sub">CHIKENBURBERG · МЕМО-ИМПЕРИЯ</div>
+    <input type="text" class="login-input" id="loginName" placeholder="Твой ник" maxlength="16" value="Nowkie">
+    <button class="login-btn" id="loginBtn">🍔 СТАРТ</button>
+</div>
+
+<div class="particles" id="particles"></div>
+<!-- <div class="debug-toggle" id="debugToggle">🔧 DEV</div> -->
+<!-- <div class="debug-panel" id="debugPanel">
+    <button class="debug-btn" data-debug="add1k">+$1K</button>
+    <button class="debug-btn" data-debug="add10k">+$10K</button>
+    <button class="debug-btn" data-debug="add100k">+$100K</button>
+    <button class="debug-btn" data-debug="addClicks">+50 кликов</button>
+    <button class="debug-btn" data-debug="addIncome">×2 доход (30с)</button>
+    <button class="debug-btn" data-debug="reset">💀 СБРОС</button>
+</div> -->
+
+<div class="game-container" id="gameContainer">
+    <div class="header">
+        <div class="title">⚫ ITD · NOWKIE CLICKER</div>
+        <div class="player-name" id="playerNameDisplay">Nowkie</div>
+    </div>
+
+    <div class="money-display">
+        <div class="money-amount" id="moneyAmount">$0</div>
+        <div class="per-second" id="perSecond">💸 $0 / сек</div>
+        <div class="rank-display">
+            <div class="rank-badge-main" id="rankBadgeMain">⚫ ИТДешник простой</div>
+            <div class="rank-progress" id="rankProgress"></div>
+            <div class="progress-bar-bg"><div class="progress-fill" id="rankProgressFill"></div></div>
+        </div>
+        <div id="tempBoostBar"></div>
+    </div>
+
+    <!-- Вкладка КЛИК -->
+    <div class="tab-panel active" id="panel-main">
+        <div class="click-area">
+            <button class="main-click-btn" id="mainClickBtn">🍔</button>
+        </div>
+        <div class="click-hint">🍔 Продвижение чикенбурбе</div>
+        <div style="text-align:center;margin-top:8px;color:#aaa;font-size:0.7em;">
+            Множитель клика: <span style="color:#ffcc88;" id="clickMultiplier">×1</span> | 
+            Кликов: <span style="color:#fff;" id="totalClicks">0</span>
+        </div>
+    </div>
+
+    <!-- Вкладка МЕМЫ -->
+    <div class="tab-panel" id="panel-memes">
+        <div class="shop-section-title">🍔 МЕМЫ ЧИКЕНБУРБЕРГА</div>
+        <div id="memesList"></div>
+    </div>
+
+    <!-- Вкладка БУСТЫ -->
+    <div class="tab-panel" id="panel-boosts">
+        <div class="shop-section-title">⚡ БУСТЫ ИТД</div>
+        <div id="boostsList"></div>
+    </div>
+
+    <!-- Вкладка КАЗИНО (ЗАБЛОКИРОВАНА) -->
+    <div class="tab-panel" id="panel-casino">
+        <div class="casino-locked-overlay">
+            <div class="lock-icon">🔒</div>
+            <p>⚫ КАЗИНО ВРЕМЕННО НЕДОСТУПНО ⚫</p>
+            <p style="font-size:0.75rem; margin-top:6px;">Режим «чёрно-белой дисциплины»</p>
+        </div>
+        <div class="sub-tabs">
+            <button class="sub-tab-btn">🃏 BJ</button>
+            <button class="sub-tab-btn">🪙 Coin</button>
+            <button class="sub-tab-btn">🎡 Рулетка</button>
+            <button class="sub-tab-btn">🎰 Слоты</button>
+        </div>
+        <div class="bj-table" style="filter: grayscale(1); opacity:0.6; pointer-events: none; background:#1a1a1a; border-radius:20px; padding:20px; text-align:center;">
+            <div class="bj-title">🔒 ДОСТУП ЗАКРЫТ</div>
+            <div style="padding: 20px;">🔐 Только после обновления</div>
+        </div>
+    </div>
+</div>
+
+<div class="bottom-menu" id="bottomMenu">
+    <button class="bottom-menu-btn active" data-menu="main"><span class="icon">🍔</span><span>Чикенбурбе</span></button>
+    <div class="menu-divider"></div>
+    <button class="bottom-menu-btn" data-menu="memes"><span class="icon">😂</span><span>Мемы</span></button>
+    <div class="menu-divider"></div>
+    <button class="bottom-menu-btn" data-menu="boosts"><span class="icon">⚡</span><span>Бусты</span></button>
+    <div class="menu-divider"></div>
+    <button class="bottom-menu-btn" data-menu="casino"><span class="icon">🎰</span><span>Казино 🔒</span></button>
+</div>
+
+<script>
+    // ===================== НОВЫЕ РАНГИ (5 штук) =====================
+    const RANKS = [
+        { name: '⚫ ИТДешник простой', minMoney: 0, minClicks: 0, minIncome: 0 },
+        { name: '🔘 ИТДедешник элитный', minMoney: 2000, minClicks: 30, minIncome: 10 },
+        { name: '🌽 Кузя Лакомкин', minMoney: 15000, minClicks: 150, minIncome: 70 },
+        { name: '🍔 Чикенбурбе', minMoney: 120000, minClicks: 800, minIncome: 500 },
+        { name: '👑 Nowkie', minMoney: 1200000, minClicks: 5000, minIncome: 4000 }
+    ];
+
+    // ========= МЕМЫ (6 штук) с изменёнными эмодзи =========
+    const MEMES = [
+        { id: 'chikenburbe', name: 'Чикенбурбе', icon: '🍔', baseCost: 60, baseIncome: 0.6, costGrowth: 1.18, desc: 'Главный мем паблика' },
+        { id: 'kuzya', name: 'Кузя Лакомкин', icon: '🌽', baseCost: 350, baseIncome: 3, costGrowth: 1.2, desc: 'Кот-лакомка (кукурузный)' },
+        { id: 'granat', name: 'Гранат', icon: '🧨', baseCost: 1500, baseIncome: 10, costGrowth: 1.22, desc: 'Сочный удар' },
+        { id: 'dovyeb', name: 'Довыебенитесь', icon: '🤯', baseCost: 5500, baseIncome: 40, costGrowth: 1.25, desc: 'Криповый мем' },
+        { id: 'nowkie_legs', name: 'Ножки Nowkie', icon: '🦶', baseCost: 20000, baseIncome: 130, costGrowth: 1.28, desc: 'Куриные ножки (стопы)' },
+        { id: 'kogda_ls', name: 'когда ЛС?', icon: '❓', baseCost: 60000, baseIncome: 380, costGrowth: 1.3, desc: 'Тайна личных сообщений' }
+    ];
+
+    // ========= БУСТЫ (абсолютные значения) =========
+    const BOOSTS = [
+        { id: 'itd', name: 'ИТД', icon: '🌐', baseCost: 1200, effect: { clickAdd: 1 }, desc: '+1 сила клика', costGrowth: 2.5 },
+        { id: 'nuksta', name: 'НУКСТА', icon: '⭐', baseCost: 5200, effect: { clickAdd: 5 }, desc: '+5 сила клика', costGrowth: 2.8 },
+        { id: 'event', name: 'Ивент', icon: '🎉', baseCost: 19000, effect: { critChance: 0.08 }, desc: '+8% шанс крит. клика (×5)', costGrowth: 3.0 },
+        { id: 'itedeshniki', name: 'Итедешники', icon: '🔥', baseCost: 85000, effect: { clickAdd: 10, globalMultAdd: 0.5 }, desc: '+10 сила клика, +50% доход мемов', costGrowth: 3.2 }
+    ];
+
+    // Глобальное состояние
+    let state = {
+        playerName: 'Nowkie',
+        money: 500,
+        totalClicks: 0,
+        clickPower: 1,          // базовая сила клика
+        globalMultiplier: 1,    // множитель дохода от мемов
+        critChance: 0,
+        autoBoost: 0,           // процентный бонус к доходу мемов (не используется в новых бустах, но оставлен)
+        tempMultiplier: 1,
+        tempMultiplierEnd: 0,
+        memes: MEMES.map(m => ({ ...m, count: 0 })),
+        boosts: BOOSTS.map(b => ({ ...b, count: 0 })),
+        highestRankIndex: 0
+    };
+
+    // Вспомогательные функции
+    const formatMoney = (n) => {
+        if (n >= 1e12) return '$' + (n / 1e12).toFixed(2) + 'T';
+        if (n >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B';
+        if (n >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
+        if (n >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'K';
+        return '$' + Math.floor(n).toLocaleString();
+    };
+
+    const getTotalIncomePerSec = () => {
+        let total = 0;
+        state.memes.forEach(m => total += m.baseIncome * m.count);
+        total *= state.globalMultiplier * (1 + state.autoBoost);
+        if (Date.now() < state.tempMultiplierEnd) total *= state.tempMultiplier;
+        return total;
+    };
+
+    const getCurrentRankIndex = () => {
+        let income = getTotalIncomePerSec();
+        for (let i = RANKS.length-1; i >= 0; i--) {
+            if (state.money >= RANKS[i].minMoney && state.totalClicks >= RANKS[i].minClicks && income >= RANKS[i].minIncome)
+                return i;
+        }
+        return 0;
+    };
+    const updateRank = () => {
+        let idx = getCurrentRankIndex();
+        if (idx > state.highestRankIndex) state.highestRankIndex = idx;
+    };
+    const getRank = () => RANKS[state.highestRankIndex];
+
+    // Пересчёт всех эффектов бустов (абсолютные значения + крит)
+    const recalcAllBoosts = () => {
+        state.clickPower = 1;
+        state.globalMultiplier = 1;
+        state.critChance = 0;
+        state.autoBoost = 0;
+        state.boosts.forEach(b => {
+            for(let i=0; i<b.count; i++) {
+                if(b.effect.clickAdd) state.clickPower += b.effect.clickAdd;
+                if(b.effect.globalMultAdd) state.globalMultiplier += b.effect.globalMultAdd;
+                if(b.effect.critChance) state.critChance += b.effect.critChance;
+            }
+        });
+        // дополнительно, чтобы избежать нулевых значений
+        if(state.globalMultiplier < 1) state.globalMultiplier = 1;
+        if(state.clickPower < 1) state.clickPower = 1;
+    };
+
+    const getClickValue = () => {
+        let val = state.clickPower;
+        if (Date.now() < state.tempMultiplierEnd) val *= state.tempMultiplier;
+        if (state.critChance > 0 && Math.random() < state.critChance) { val *= 5; spawnPopText('💥 КРИТИЧЕСКИЙ МЕМ!', '#ccaa88'); }
+        return val;
+    };
+
+    const spawnPopText = (text, color) => {
+        let div = document.createElement('div');
+        div.className = 'click-value-pop';
+        div.textContent = text;
+        div.style.color = color || '#ffdd99';
+        let btn = document.getElementById('mainClickBtn');
+        if(btn) { let rect = btn.getBoundingClientRect(); div.style.left = Math.max(10, rect.left + rect.width/2 - 40) + 'px'; div.style.top = Math.max(10, rect.top - 10) + 'px'; }
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 1000);
+    };
+
+    const getUpgradeCost = (item) => item.count === 0 ? item.baseCost : Math.floor(item.baseCost * Math.pow(item.costGrowth || 2, item.count));
+
+    // Покупки
+    const buyMeme = (id) => {
+        let item = state.memes.find(m => m.id === id);
+        if(!item) return;
+        let cost = getUpgradeCost(item);
+        if(state.money >= cost) {
+            state.money -= cost;
+            item.count++;
+            renderMemes(); updateMoneyUI(); spawnPopText('+' + item.icon + ' ' + item.name, '#dddddd');
+        }
+    };
+    const buyBoost = (id) => {
+        let item = state.boosts.find(b => b.id === id);
+        if(!item) return;
+        let cost = getUpgradeCost(item);
+        if(state.money >= cost) {
+            state.money -= cost;
+            item.count++;
+            recalcAllBoosts();
+            renderBoosts(); updateMoneyUI(); spawnPopText(item.icon + ' УРОВЕНЬ ' + item.count, '#aaaaaa');
+        }
+    };
+
+    // Отрисовка интерфейса
+    let dirtyMemes = true, dirtyBoosts = true;
+    const renderMemes = () => {
+        if(!dirtyMemes) return;
+        dirtyMemes = false;
+        let container = document.getElementById('memesList');
+        if(!container) return;
+        container.innerHTML = state.memes.map(m => {
+            let cost = getUpgradeCost(m);
+            let can = state.money >= cost;
+            let income = m.baseIncome * state.globalMultiplier * (1 + state.autoBoost);
+            return `<div class="upgrade-card ${m.count>0 ? 'owned' : ''} ${!can ? 'locked' : ''}" data-action="buyMeme" data-id="${m.id}">
+                        <div class="upgrade-icon">${m.icon}</div>
+                        <div class="upgrade-info">
+                            <div class="upgrade-name">${m.name}</div>
+                            <div class="upgrade-desc">${m.desc}</div>
+                            <div class="upgrade-stats">+${formatMoney(income)}/сек</div>
+                        </div>
+                        <div class="upgrade-cost">${formatMoney(cost)}</div>
+                        ${m.count>0 ? `<div class="upgrade-count">×${m.count}</div>` : ''}
+                    </div>`;
+        }).join('');
+    };
+    const renderBoosts = () => {
+        if(!dirtyBoosts) return;
+        dirtyBoosts = false;
+        let container = document.getElementById('boostsList');
+        if(!container) return;
+        container.innerHTML = state.boosts.map(b => {
+            let cost = getUpgradeCost(b);
+            let can = state.money >= cost;
+            let effText = '';
+            if(b.effect.clickAdd && b.effect.globalMultAdd) effText = `+${b.effect.clickAdd} сила клика, +${(b.effect.globalMultAdd*100).toFixed(0)}% доход`;
+            else if(b.effect.clickAdd) effText = `+${b.effect.clickAdd} сила клика`;
+            else if(b.effect.globalMultAdd) effText = `+${(b.effect.globalMultAdd*100).toFixed(0)}% доход мемов`;
+            else if(b.effect.critChance) effText = `+${(b.effect.critChance*100).toFixed(0)}% крит шанс`;
+            return `<div class="upgrade-card ${b.count>0 ? 'owned' : ''} ${!can ? 'locked' : ''}" data-action="buyBoost" data-id="${b.id}">
+                        <div class="upgrade-icon">${b.icon}</div>
+                        <div class="upgrade-info">
+                            <div class="upgrade-name">${b.name}</div>
+                            <div class="upgrade-desc">${b.desc}</div>
+                            <div class="upgrade-stats">${effText}</div>
+                        </div>
+                        <div class="upgrade-cost">${formatMoney(cost)}</div>
+                        ${b.count>0 ? `<div class="upgrade-count">ур.${b.count}</div>` : ''}
+                    </div>`;
+        }).join('');
+    };
+
+    // отображение прогресса ранга (текст + полоска)
+    const updateRankProgress = () => {
+        let current = state.highestRankIndex;
+        let nextRank = RANKS[current+1];
+        if(nextRank) {
+            let needMoney = Math.max(0, nextRank.minMoney - state.money);
+            let needClicks = Math.max(0, nextRank.minClicks - state.totalClicks);
+            let needIncome = Math.max(0, nextRank.minIncome - getTotalIncomePerSec());
+            let progressText = `→ ${nextRank.name}: 💰 ${formatMoney(needMoney)}  ·  👆 ${needClicks} кликов  ·  📈 ${formatMoney(needIncome)}/сек`;
+            document.getElementById('rankProgress').innerHTML = progressText;
+            // полоска прогресса (усреднённая по трём параметрам)
+            let moneyPerc = Math.min(1, state.money / nextRank.minMoney);
+            let clickPerc = Math.min(1, state.totalClicks / nextRank.minClicks);
+            let incomePerc = Math.min(1, getTotalIncomePerSec() / nextRank.minIncome);
+            let avgPerc = (moneyPerc + clickPerc + incomePerc) / 3;
+            let fill = document.getElementById('rankProgressFill');
+            if(fill) fill.style.width = (avgPerc * 100) + '%';
+        } else {
+            document.getElementById('rankProgress').innerHTML = '🏆 ВЫ ДОСТИГЛИ ВЕРШИНЫ ИТД!';
+            let fill = document.getElementById('rankProgressFill');
+            if(fill) fill.style.width = '100%';
+        }
+    };
+
+    const updateMoneyUI = () => {
+        let el = document.getElementById('moneyAmount');
+        if(el) { let ns = formatMoney(state.money); if(el.textContent !== ns) { el.textContent = ns; el.classList.add('pop'); setTimeout(()=>el.classList.remove('pop'),200); } }
+        document.getElementById('perSecond').textContent = '💸 ' + formatMoney(getTotalIncomePerSec()) + ' / сек';
+        let rank = getRank();
+        document.getElementById('rankBadgeMain').textContent = rank.name;
+        let mult = state.clickPower;
+        if (Date.now() < state.tempMultiplierEnd) mult *= state.tempMultiplier;
+        document.getElementById('clickMultiplier').textContent = '×' + (Math.floor(mult*10)/10);
+        document.getElementById('totalClicks').textContent = state.totalClicks;
+        let boostBar = document.getElementById('tempBoostBar');
+        if(boostBar) {
+            if(Date.now() < state.tempMultiplierEnd) {
+                let s = Math.ceil((state.tempMultiplierEnd - Date.now())/1000);
+                boostBar.innerHTML = '<span class="temp-boost-indicator">⚡×' + state.tempMultiplier + ' (' + s + 'с)</span>';
+            } else boostBar.innerHTML = '';
+        }
+        updateRankProgress();
+        dirtyMemes = true; dirtyBoosts = true;
+    };
+
+    // Сохранение / загрузка
+    const saveGame = () => {
+        let data = {
+            playerName: state.playerName, money: state.money, totalClicks: state.totalClicks,
+            memes: state.memes.map(m=>({id:m.id, count:m.count})),
+            boosts: state.boosts.map(b=>({id:b.id, count:b.count})),
+            highestRankIndex: state.highestRankIndex
+        };
+        localStorage.setItem('itdNowkieBW', JSON.stringify(data));
+    };
+    const loadGame = () => {
+        let raw = localStorage.getItem('itdNowkieBW');
+        if(!raw) return false;
+        try {
+            let d = JSON.parse(raw);
+            state.playerName = d.playerName || 'Nowkie';
+            state.money = d.money || 500;
+            state.totalClicks = d.totalClicks || 0;
+            state.highestRankIndex = d.highestRankIndex || 0;
+            if(d.memes) d.memes.forEach(s => { let m = state.memes.find(a=>a.id===s.id); if(m) m.count = s.count; });
+            if(d.boosts) d.boosts.forEach(s => { let b = state.boosts.find(a=>a.id===s.id); if(b) b.count = s.count; });
+            recalcAllBoosts();
+            updateRank();
+            return true;
+        } catch(e) { return false; }
+    };
+    const resetGame = () => { localStorage.removeItem('itdNowkieBW'); location.reload(); };
+
+    // частицы
+    function createParticles() {
+        let container = document.getElementById('particles');
+        if(!container) return;
+        container.innerHTML = '';
+        for(let i=0;i<50;i++) {
+            let p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            let size = 2 + Math.random() * 6;
+            p.style.width = size + 'px';
+            p.style.height = size + 'px';
+            p.style.background = `rgba(120,120,120,${0.2+Math.random()*0.3})`;
+            p.style.animationDuration = 8 + Math.random() * 20 + 's';
+            p.style.animationDelay = Math.random() * 15 + 's';
+            container.appendChild(p);
+        }
+    }
+
+    // Инициализация
+    document.addEventListener('DOMContentLoaded', () => {
+        createParticles();
+        let hasSave = loadGame();
+        if(hasSave) {
+            document.getElementById('playerNameDisplay').textContent = state.playerName;
+            document.getElementById('loginName').value = state.playerName;
+            document.getElementById('loginOverlay').classList.add('hidden');
+        } else {
+            state.money = 500;
+            updateRank();
+        }
+        renderMemes(); renderBoosts(); updateMoneyUI();
+
+        // логин
+        document.getElementById('loginBtn')?.addEventListener('click', () => {
+            let name = document.getElementById('loginName').value.trim() || 'Nowkie';
+            state.playerName = name;
+            document.getElementById('playerNameDisplay').textContent = name;
+            document.getElementById('loginOverlay').classList.add('hidden');
+            saveGame();
+        });
+
+        // клик
+        document.getElementById('mainClickBtn')?.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            let val = getClickValue();
+            state.money += val;
+            state.totalClicks++;
+            spawnPopText('+'+formatMoney(val), '#ffdd99');
+            updateMoneyUI();
+            dirtyMemes = true; dirtyBoosts = true;
+            renderMemes(); renderBoosts();
+            updateRank();
+        });
+
+        // покупки через делегирование
+        document.body.addEventListener('click', (e) => {
+            let card = e.target.closest('.upgrade-card');
+            if(!card) return;
+            let act = card.dataset.action, id = card.dataset.id;
+            if(act === 'buyMeme' && id) buyMeme(id);
+            if(act === 'buyBoost' && id) buyBoost(id);
+            updateMoneyUI();
+            updateRank();
+            saveGame();
+        });
+
+        // нижнее меню
+        document.querySelectorAll('.bottom-menu-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.bottom-menu-btn').forEach(b=>b.classList.remove('active'));
+                btn.classList.add('active');
+                let target = btn.dataset.menu;
+                document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+                document.getElementById('panel-'+target)?.classList.add('active');
+            });
+        });
+
+        // debug
+        document.getElementById('debugToggle')?.addEventListener('click',()=>document.getElementById('debugPanel')?.classList.toggle('open'));
+        document.getElementById('debugPanel')?.addEventListener('click',(e)=>{
+            let btn = e.target.closest('.debug-btn');
+            if(!btn) return;
+            if(btn.dataset.debug === 'add1k') state.money += 1000;
+            if(btn.dataset.debug === 'add10k') state.money += 10000;
+            if(btn.dataset.debug === 'add100k') state.money += 100000;
+            if(btn.dataset.debug === 'addClicks') state.totalClicks += 50;
+            if(btn.dataset.debug === 'addIncome') { state.tempMultiplier = 2; state.tempMultiplierEnd = Date.now() + 30000; spawnPopText('×2 доход на 30с','#aaaaaa'); }
+            if(btn.dataset.debug === 'reset') if(confirm('Сбросить прогресс?')) resetGame();
+            updateMoneyUI(); renderMemes(); renderBoosts(); updateRank(); saveGame();
+        });
+
+        // пассивный доход и автосохранение
+        let lastTick = Date.now();
+        setInterval(() => {
+            let now = Date.now();
+            let dt = Math.min(0.5, (now - lastTick)/1000);
+            lastTick = now;
+            let inc = getTotalIncomePerSec() * dt;
+            if(inc > 0) state.money += inc;
+            if(Date.now() >= state.tempMultiplierEnd && state.tempMultiplier !== 1) state.tempMultiplier = 1;
+            updateMoneyUI();
+            if(Math.random() < 0.1) { dirtyMemes = true; dirtyBoosts = true; renderMemes(); renderBoosts(); }
+            updateRank();
+        }, 200);
+        setInterval(() => { if(document.getElementById('loginOverlay')?.classList.contains('hidden')) saveGame(); }, 7000);
+    });
+</script>
+</body>
+</html>
